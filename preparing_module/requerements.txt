@@ -1,0 +1,7 @@
+fastapi==0.95.2
+uvicorn==0.22.0
+transformers==4.30.0
+bertopic==0.13.0
+sentence-transformers==2.2.2
+umap-learn==0.5.2
+pandas==1.5.3

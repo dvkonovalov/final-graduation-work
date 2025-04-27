@@ -59,6 +59,16 @@ def process_data(post_list: PostList):
         "hashtags": post.hashtags
     } for post in post_list.posts]
 
+    # Если передан путь к дополнительным данным - загружаем их
+    if post_list.path:
+        try:
+            extra_df = pd.read_csv(post_list.path)
+            extra_df['timestamp'] = pd.to_datetime(extra_df['timestamp'])
+            # Добавляем данные из файла
+            data.extend(extra_df.to_dict(orient='records'))
+        except Exception as e:
+            return {"status": "error", "message": f"Failed to load file: {str(e)}"}
+
     # Проверка на количество записей
     if len(data) < 10:
         return {"status": "error", "message": "Not enough data. At least 10 records are required."}
