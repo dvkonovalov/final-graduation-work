@@ -1,13 +1,17 @@
-text,timestamp,hashtags,time_bucket,sentiment_label,sentiment_score,sentiment_mapped,topic,hour_of_day,day_of_week,hashtag_crypto,hashtag_bitcoin,hashtag_ethereum,hashtag_bearish,hashtag_doge
-Bitcoin price is rising rapidly! 🚀 #crypto #bitcoin,2025-04-26 12:30:00,"['crypto', 'bitcoin']",2025-04-26 12:30:00,5 stars,0.2689608037471771,1,-1,12,5,1,1,0,0,0
-I'm worried about the recent drop in Ethereum value... #ethereum #bearish,2025-04-26 12:35:00,"['ethereum', 'bearish']",2025-04-26 12:30:00,2 stars,0.3381599187850952,-1,-1,12,5,0,0,1,1,0
-Huge interest in Dogecoin again! Could it moon? #doge #crypto,2025-04-26 12:40:00,"['doge', 'crypto']",2025-04-26 12:40:00,5 stars,0.7175620198249817,1,-1,12,5,1,0,0,0,1
-Bitcoin price is rising rapidly! 🚀 #crypto #bitcoin,2025-04-26 12:30:00,"['crypto', 'bitcoin']",2025-04-26 12:30:00,5 stars,0.2689608037471771,1,-1,12,5,1,1,0,0,0
-I'm worried about the recent drop in Ethereum value... #ethereum #bearish,2025-04-26 12:35:00,"['ethereum', 'bearish']",2025-04-26 12:30:00,2 stars,0.3381599187850952,-1,-1,12,5,0,0,1,1,0
-Huge interest in Dogecoin again! Could it moon? #doge #crypto,2025-04-26 12:40:00,"['doge', 'crypto']",2025-04-26 12:40:00,5 stars,0.7175620198249817,1,-1,12,5,1,0,0,0,1
-Bitcoin price is rising rapidly! 🚀 #crypto #bitcoin,2025-04-26 12:30:00,"['crypto', 'bitcoin']",2025-04-26 12:30:00,5 stars,0.2689608037471771,1,-1,12,5,1,1,0,0,0
-I'm worried about the recent drop in Ethereum value... #ethereum #bearish,2025-04-26 12:35:00,"['ethereum', 'bearish']",2025-04-26 12:30:00,2 stars,0.3381599187850952,-1,-1,12,5,0,0,1,1,0
-Huge interest in Dogecoin again! Could it moon? #doge #crypto,2025-04-26 12:40:00,"['doge', 'crypto']",2025-04-26 12:40:00,5 stars,0.7175620198249817,1,-1,12,5,1,0,0,0,1
-Bitcoin price is rising rapidly! 🚀 #crypto #bitcoin,2025-04-26 12:50:00,"['crypto', 'bitcoin']",2025-04-26 12:50:00,5 stars,0.2689608037471771,1,-1,12,5,1,1,0,0,0
-I'm worried about the recent drop in Ethereum value... #ethereum #bearish,2025-04-26 12:35:00,"['ethereum', 'bearish']",2025-04-26 12:30:00,2 stars,0.3381599187850952,-1,-1,12,5,0,0,1,1,0
-Huge interest in Dogecoin again! Could it moon? #doge #crypto,2025-04-26 12:10:00,"['doge', 'crypto']",2025-04-26 12:10:00,5 stars,0.7175620198249817,1,-1,12,5,1,0,0,0,1
+text,timestamp,hashtags,time_bucket,sentiment_label,sentiment_score,sentiment_mapped,topic,hour_of_day,day_of_week,hashtag_#bitcoin,hashtag_#crypto,hashtag_#cryptomarket,hashtag_#trading
+Bitcoin is reaching new all-time highs! 🚀,2024-04-01 00:00:00+00:00,"['#bitcoin', '#crypto']",2024-04-01 00:00:00+00:00,5 stars,0.8078905344009399,1,-1,0,0,1,1,0,0
+Market correction incoming? Stay alert!,2024-04-01 00:10:00+00:00,"['#cryptomarket', '#trading']",2024-04-01 00:10:00+00:00,1 star,0.7006117701530457,-1,-1,0,0,0,0,1,1
+Bitcoin is reaching new all-time highs! 🚀,2024-04-01 00:00:00+00:00,"['#bitcoin', '#crypto']",2024-04-01 00:00:00+00:00,5 stars,0.8078905344009399,1,-1,0,0,1,1,0,0
+Market correction incoming? Stay alert!,2024-04-01 00:10:00+00:00,"['#cryptomarket', '#trading']",2024-04-01 00:10:00+00:00,1 star,0.7006117701530457,-1,-1,0,0,0,0,1,1
+Bitcoin is reaching new all-time highs! 🚀,2024-04-01 00:00:00+00:00,"['#bitcoin', '#crypto']",2024-04-01 00:00:00+00:00,5 stars,0.8078905344009399,1,-1,0,0,1,1,0,0
+Market correction incoming? Stay alert!,2024-04-01 00:10:00+00:00,"['#cryptomarket', '#trading']",2024-04-01 00:10:00+00:00,1 star,0.7006117701530457,-1,-1,0,0,0,0,1,1
+Bitcoin is reaching new all-time highs! 🚀,2024-04-01 00:00:00+00:00,"['#bitcoin', '#crypto']",2024-04-01 00:00:00+00:00,5 stars,0.8078905344009399,1,-1,0,0,1,1,0,0
+Market correction incoming? Stay alert!,2024-04-01 00:10:00+00:00,"['#cryptomarket', '#trading']",2024-04-01 00:10:00+00:00,1 star,0.7006117701530457,-1,-1,0,0,0,0,1,1
+Bitcoin is reaching new all-time highs! 🚀,2024-04-01 00:00:00+00:00,"['#bitcoin', '#crypto']",2024-04-01 00:00:00+00:00,5 stars,0.8078905344009399,1,-1,0,0,1,1,0,0
+Market correction incoming? Stay alert!,2024-04-01 00:10:00+00:00,"['#cryptomarket', '#trading']",2024-04-01 00:10:00+00:00,1 star,0.7006117701530457,-1,-1,0,0,0,0,1,1
+Bitcoin is reaching new all-time highs! 🚀,2024-04-01 00:00:00+00:00,"['#bitcoin', '#crypto']",2024-04-01 00:00:00+00:00,5 stars,0.8078905344009399,1,-1,0,0,1,1,0,0
+Market correction incoming? Stay alert!,2024-04-01 00:10:00+00:00,"['#cryptomarket', '#trading']",2024-04-01 00:10:00+00:00,1 star,0.7006117701530457,-1,-1,0,0,0,0,1,1
+Bitcoin is reaching new all-time highs! 🚀,2024-04-01 00:00:00+00:00,"['#bitcoin', '#crypto']",2024-04-01 00:00:00+00:00,5 stars,0.8078905344009399,1,-1,0,0,1,1,0,0
+Market correction incoming? Stay alert!,2024-04-01 00:10:00+00:00,"['#cryptomarket', '#trading']",2024-04-01 00:10:00+00:00,1 star,0.7006117701530457,-1,-1,0,0,0,0,1,1
+Bitcoin is reaching new all-time highs! 🚀,2024-04-01 00:00:00+00:00,"['#bitcoin', '#crypto']",2024-04-01 00:00:00+00:00,5 stars,0.8078905344009399,1,-1,0,0,1,1,0,0
+Market correction incoming? Stay alert!,2024-04-01 00:10:00+00:00,"['#cryptomarket', '#trading']",2024-04-01 00:10:00+00:00,1 star,0.7006117701530457,-1,-1,0,0,0,0,1,1
