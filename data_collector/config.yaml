@@ -1,0 +1,13 @@
+collection_interval_minutes: 10  # Интервал сбора данных в минутах
+fastapi_base_url: "http://127.0.0.1:8002"  # Адрес твоего модуля предобработки
+
+backup_paths:
+  posts: "backups/backup_posts.csv"
+  historical: "backups/backup_historical.csv"
+
+reddit:
+  client_id: "XjhMKpfNTmmZb04iyxjPvw"
+  client_secret: "JfwSgsblu6nNJ9QQWtohggKCrhtYWw"
+  username: "Wooden-Ask-4958"
+  password: "Miem2025."
+  user_agent: "CryptoDataCollector by /u/Wooden-Ask-4958"
