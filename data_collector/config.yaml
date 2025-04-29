@@ -1,9 +1,12 @@
-collection_interval_minutes: 10  # Интервал сбора данных в минутах
-fastapi_base_url: "http://127.0.0.1:8002"  # Адрес твоего модуля предобработки
+collection_interval_hours: 24  # Интервал сбора данных в часах
+collection_interval_minutes: 1440  # Интервал сбора постов в минутах (24 часа)
+fastapi_base_url: "http://127.0.0.1:8002"
 
 backup_paths:
   posts: "backups/backup_posts.csv"
   historical: "backups/backup_historical.csv"
+
+historical_days: 90  # Сколько дней истории загружать
 
 reddit:
   client_id: "XjhMKpfNTmmZb04iyxjPvw"
