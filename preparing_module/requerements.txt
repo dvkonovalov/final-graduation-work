@@ -1,7 +1,11 @@
-fastapi==0.95.2
-uvicorn==0.22.0
+Flask[async] == 3.1.0
+pydantic == 2.11.4
 transformers==4.30.0
 bertopic==0.13.0
 sentence-transformers==2.2.2
+pandas == 2.2.3
 umap-learn==0.5.2
-pandas==1.5.3
+pymongo == 4.13.0
+
+fastapi==0.95.2
+uvicorn==0.22.0

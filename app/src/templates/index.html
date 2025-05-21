@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cryptocurrency Rates</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #fafafa;
+            font-family: Arial, sans-serif;
+        }
+        
+        h1 {
+            color: #ffb703;
+            text-align: center;
+            margin-top: 50px;
+        }
+        
+        table {
+            width: 80%;
+            margin: auto;
+            border-collapse: collapse;
+            box-shadow: 0 0 10px rgba(0,0,0,.1);
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        tbody tr:nth-child(even) {background-color: #f2f2f2;}
+        tbody tr:hover {background-color:#ddd;}
+        
+        /* Добавляем красивые иконки */
+        i.fa-coin {
+            color: gold;
+            font-size: 2em;
+        }
+        
+        /* Стили для графика */
+        #chart {
+            width: 100%;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <h1><i class="fa fa-coins"></i> Cryptocurrency Rates</h1>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Currency</th>
+                <th scope="col">Price ($)</th>
+                <th scope="col">Change (%)</th>
+            </tr>
+        </thead>
+        <tbody id="currency-table">
+            {% for currency in currencies %}
+            <tr>
+                <td>{{ currency.name }}</td>
+                <td>${{ currency.price }}</td>
+                <td>{% if currency.change > 0 %}<span style="color: green;">+{{ currency.change }}%</span>{% else %}<span style="color: red;">{{ currency.change }}%</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <button id="update-button" class="btn btn-primary">Update Data</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7/dist/chartjs-plugin-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

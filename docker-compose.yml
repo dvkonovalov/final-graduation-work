@@ -1,0 +1,103 @@
+version: '3'
+services:
+  # web:
+  #   build:
+  #     context: app
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "5000:5000"
+  #   volumes:
+  #     - ./app:/app
+  #   depends_on:
+  #     - database
+  #   networks:
+  #     - crypto-network
+    
+  # datacollector:
+  #   build:
+  #     context: data_collector
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     collection_interval_hours: ${collection_interval_hours}
+  #     collection_interval_minutes: ${collection_interval_minutes}
+  #     fastapi_base_url: ${fastapi_base_url}
+  #     reddit_client_id: ${reddit_client_id}
+  #     reddit_client_secret: ${reddit_client_secret}
+  #     reddit_username: ${reddit_username}
+  #     reddit_password: ${reddit_password}
+  #     reddit_user_agent: ${reddit_user_agent}
+  #   ports:
+  #     - "5001:5001"
+  #   volumes:
+  #     - ./data_collector:/data_collector
+  #   depends_on:
+  #     - database
+  #   networks:
+  #     - crypto-network
+
+  gateway:
+    build:
+      context: api_gateway
+      dockerfile: Dockerfile
+    ports:
+      - "5050:5050"
+    depends_on:
+      - database
+    networks:
+      - crypto-network
+
+  mongodb:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+  database:
+    image: postgres
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: crypto
+      POSTGRES_MULTIPLE_DATABASES: tokens
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - crypto-network
+
+  # prometheus:
+  #   image: prom/prometheus
+  #   container_name: prometheus
+  #   volumes:
+  #     - ./prometheus:/etc/prometheus
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #   ports:
+  #     - "9090:9090"
+  #   networks:
+  #     - crypto-network
+
+  # grafana:
+  #   image: grafana/grafana
+  #   container_name: grafana
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - prometheus
+  #   networks:
+  #     - crypto-network
+
+
+volumes:
+  postgres_data:
+  mongodata:
+
+networks:
+  crypto-network:
+    driver: bridge

@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-file_path = 'backups/backup_historical.csv'
+file_path = '../backups/backup_historical.csv'
 
 # Проверим, что файл существует и не пустой
 if os.path.exists(file_path) and os.path.getsize(file_path) > 0:

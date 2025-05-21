@@ -1,0 +1,5 @@
+Flask[async] == 3.1.0
+Flask-SQLAlchemy == 3.1.1
+psycopg2-binary == 2.9.10
+uuid == 1.30
+cryptography == 45.0.2

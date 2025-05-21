@@ -1,15 +1,14 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
 from transformers import pipeline
 from bertopic import BERTopic
 from sentence_transformers import SentenceTransformer
 import pandas as pd
-import uvicorn
-import os
 import umap
 
-# Инициализация FastAPI
-app = FastAPI()
+from src.db import db
+from src.models.post_list import PostList
+from src.models.historical_data import HistoricalData
+
 
 # Инициализация моделей
 sentiment_pipeline = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
@@ -17,30 +16,6 @@ embedding_model = SentenceTransformer('./local_models/all-MiniLM-L6-v2')
 umap_model = umap.UMAP(n_neighbors=2, n_components=2, min_dist=0.0, metric='cosine')
 topic_model = BERTopic(embedding_model=embedding_model, umap_model=umap_model)
 
-# Создаем папку для сохранения файлов
-os.makedirs("output", exist_ok=True)
-
-# Описание структуры входных данных
-class Post(BaseModel):
-    text: str
-    timestamp: str  # ISO формат
-    hashtags: list[str] = []
-
-class PostList(BaseModel):
-    posts: list[Post]
-    path: str | None = None  # Путь к файлу для догрузки данных
-
-class HistoricalRecord(BaseModel):
-    timestamp: str
-    open: float
-    high: float
-    low: float
-    close: float
-    volume: float
-
-class HistoricalData(BaseModel):
-    data: list[HistoricalRecord]
-    path: str | None = None  # Путь к файлу для догрузки данных
 
 # Сентимент маппинг
 def map_sentiment(label):
@@ -50,7 +25,22 @@ def map_sentiment(label):
         return 0
     else:
         return 1
-@app.post("/process-data")
+
+def read_from_db(collection : str) -> pd.DataFrame:
+    docs = list(db[collection].find())
+    df_from_mongo = pd.DataFrame(docs)
+
+    df_from_mongo.drop(columns=["_id"], inplace=True)
+    return df_from_mongo
+
+def check_collection_existance(collection : str) -> bool:
+    return collection in db.list_collection_names()
+
+def write_to_mongo(collection : str, df : pd.DataFrame) -> None:
+    records = df.to_dict(orient="records")
+    db[collection].delete_many({})
+    db[collection].insert_many(records)
+
 def process_data(post_list: PostList):
     # Преобразование данных в DataFrame
     data = [{
@@ -62,12 +52,12 @@ def process_data(post_list: PostList):
     # Если передан путь к дополнительным данным - загружаем их
     if post_list.path:
         try:
-            extra_df = pd.read_csv(post_list.path)
+            extra_df = read_from_db(post_list.path)
             extra_df['timestamp'] = pd.to_datetime(extra_df['timestamp'])
             # Добавляем данные из файла
             data.extend(extra_df.to_dict(orient='records'))
         except Exception as e:
-            return {"status": "error", "message": f"Failed to load file: {str(e)}"}
+            return {"status": "error", "message": f"Failed to load collection: {str(e)}"}
 
     # Проверка на количество записей
     if len(data) < 10:
@@ -131,8 +121,8 @@ def process_data(post_list: PostList):
     # ---------------- Конец нового блока ----------------
 
     # Сохраним результаты
-    df.to_csv("output/processed_posts.csv", index=False)        # полный датафрейм постов
-    features.to_csv("output/processed_features.csv")             # датафрейм для обучения моделей
+    write_to_mongo('output/processed_posts', df)
+    write_to_mongo('output/processed_features', features)
 
     return {
         "status": "success",
@@ -140,7 +130,6 @@ def process_data(post_list: PostList):
         "volume_by_time_bucket": volume_by_bucket.to_dict()
     }
 
-@app.post("/upload-historical-data")
 def upload_historical_data(historical_data: HistoricalData):
     data = [{
         "timestamp": record.timestamp,
@@ -157,7 +146,7 @@ def upload_historical_data(historical_data: HistoricalData):
     # Если передан путь к дополнительным данным - загружаем их
     if historical_data.path:
         try:
-            extra_df = pd.read_csv(historical_data.path)
+            extra_df = read_from_db(historical_data.path)
             extra_df['timestamp'] = pd.to_datetime(extra_df['timestamp'])
             df = pd.concat([extra_df, df], ignore_index=True)
         except Exception as e:
@@ -165,12 +154,9 @@ def upload_historical_data(historical_data: HistoricalData):
 
     df = df.sort_values('timestamp')
 
-    df.to_csv("output/processed_historical_data.csv", index=False)
+    write_to_mongo('output/processed_historical_data', df)
 
     return {
         "status": "success",
-        "message": "Historical data processed and saved to output/processed_historical_data.csv"
+        "message": "Historical data processed and saved to output/processed_historical_data"
     }
-
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8002, reload=True)
