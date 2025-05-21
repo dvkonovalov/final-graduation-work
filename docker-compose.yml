@@ -13,38 +13,38 @@ services:
   #   networks:
   #     - crypto-network
     
-  # datacollector:
-  #   build:
-  #     context: data_collector
-  #     dockerfile: Dockerfile
-  #   environment:
-  #     collection_interval_hours: ${collection_interval_hours}
-  #     collection_interval_minutes: ${collection_interval_minutes}
-  #     fastapi_base_url: ${fastapi_base_url}
-  #     reddit_client_id: ${reddit_client_id}
-  #     reddit_client_secret: ${reddit_client_secret}
-  #     reddit_username: ${reddit_username}
-  #     reddit_password: ${reddit_password}
-  #     reddit_user_agent: ${reddit_user_agent}
-  #   ports:
-  #     - "5001:5001"
-  #   volumes:
-  #     - ./data_collector:/data_collector
-  #   depends_on:
-  #     - database
-  #   networks:
-  #     - crypto-network
-
-  gateway:
+  datacollector:
     build:
-      context: api_gateway
+      context: data_collector
       dockerfile: Dockerfile
+    environment:
+      collection_interval_hours: ${collection_interval_hours}
+      collection_interval_minutes: ${collection_interval_minutes}
+      fastapi_base_url: ${fastapi_base_url}
+      reddit_client_id: ${reddit_client_id}
+      reddit_client_secret: ${reddit_client_secret}
+      reddit_username: ${reddit_username}
+      reddit_password: ${reddit_password}
+      reddit_user_agent: ${reddit_user_agent}
     ports:
-      - "5050:5050"
+      - "5001:5001"
     depends_on:
       - database
+      - mongodb
     networks:
       - crypto-network
+
+  # gateway:
+  #   build:
+  #     context: api_gateway
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "5050:5050"
+  #   depends_on:
+  #     - database
+  #     - mongodb
+  #   networks:
+  #     - crypto-network
 
   mongodb:
     image: mongo
@@ -55,6 +55,8 @@ services:
       - "27017:27017"
     volumes:
       - mongodata:/data/db
+    networks:
+      - crypto-network
 
   database:
     image: postgres
@@ -62,7 +64,6 @@ services:
       POSTGRES_USER: username
       POSTGRES_PASSWORD: password
       POSTGRES_DB: crypto
-      POSTGRES_MULTIPLE_DATABASES: tokens
     ports:
       - "5432:5432"
     volumes:

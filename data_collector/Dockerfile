@@ -11,4 +11,4 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Запускаем приложение
-CMD ["flask", "--app", "app.py", "run", "--host=0.0.0.0"]
+CMD ["python", "app.py"]

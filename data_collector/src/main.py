@@ -8,9 +8,23 @@ import praw
 
 
 from typing import List
-from src import CONFIG
 from src.logger import logger
 from src.db import db
+
+CONFIG = {}
+
+CONFIG['collection_interval_hours'] = os.environ.get('collection_interval_hours')
+CONFIG['collection_interval_minutes'] = os.environ.get('collection_interval_minutes')
+CONFIG['fastapi_base_url'] = os.environ.get('fastapi_base_url')
+
+CONFIG['historical_days'] = os.environ.get('historical_days')
+
+CONFIG['reddit'] = {}
+CONFIG['reddit']['client_id'] = os.environ.get('reddit_client_id')
+CONFIG['reddit']['client_secret'] = os.environ.get('reddit_client_secret')
+CONFIG['reddit']['username'] = os.environ.get('reddit_username')
+CONFIG['reddit']['password'] = os.environ.get('reddit_password')
+CONFIG['reddit']['user_agent'] = os.environ.get('reddit_user_agent')
 
 # Инициализация Reddit клиента
 reddit_config = CONFIG['reddit']
@@ -53,14 +67,14 @@ def save_backup(data: List[dict], mode: str):
     """
     df = pd.DataFrame(data)
     if df.empty:
-        logger.info(f"[{datetime.utcnow()}] Нет данных для резервного копирования ({mode}).")
+        logger.debug(f"[{datetime.utcnow()}] Нет данных для резервного копирования ({mode}).")
         return
 
     # Убедимся, что coin — строка
     df["coin"] = df["coin"].apply(lambda x: x[0] if isinstance(x, list) else x)
 
     if "coin" not in df.columns:
-        logger.info(f"[{datetime.utcnow()}] Ошибка: в данных нет столбца 'coin'.")
+        logger.debug(f"[{datetime.utcnow()}] Ошибка: в данных нет столбца 'coin'.")
         return
 
     for coin_id, coin_df in df.groupby("coin"):
@@ -74,15 +88,15 @@ def save_backup(data: List[dict], mode: str):
 
         combined_df.drop_duplicates(inplace=True)
         write_to_mongo(base_collection, combined_df)
-        logger.info(f"[{datetime.utcnow()}] Данные для {coin_id} сохранены в коллекцию {base_collection} (всего {len(combined_df)} записей).")
+        logger.debug(f"[{datetime.utcnow()}] Данные для {coin_id} сохранены в коллекцию {base_collection} (всего {len(combined_df)} записей).")
 
 def collect_historical_data(coin_id: str):
     """
     Сбор исторических данных для одной монеты и резервное копирование
     """
     headers = {
-        #"User-Agent": "CryptoDataCollectorBot/1.0",
-        #"x-cg-pro-api-key": "CG-qmG711yyLriQUS8GE4RfSbed"
+        "User-Agent": "CryptoDataCollectorBot/1.0",
+        "x-cg-pro-api-key": "CG-qmG711yyLriQUS8GE4RfSbed"
     }
 
     ohlc_url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/ohlc"
@@ -94,9 +108,9 @@ def collect_historical_data(coin_id: str):
     ohlc_response.raise_for_status()
     ohlc_data = ohlc_response.json()
 
-    logger.info(f"[{datetime.utcnow()}] Получены OHLC данные для {coin_id}")
+    logger.debug(f"[{datetime.utcnow()}] Получены OHLC данные для {coin_id}")
 
-    logger.info(f"[{datetime.utcnow()}] Пауза 60 секунд перед запросом volumes для {coin_id}")
+    logger.debug(f"[{datetime.utcnow()}] Пауза 60 секунд перед запросом volumes для {coin_id}")
     time.sleep(60)
 
     volume_url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
@@ -155,9 +169,9 @@ def collect_historical_data_for_all(coins: List[str]):
             records = collect_historical_data(coin_id)
             all_records.extend(records)
         except Exception as e:
-            logger.info(f"[{datetime.utcnow()}] Ошибка при сборе исторических данных для {coin_id}: {e}")
+            logger.debug(f"[{datetime.utcnow()}] Ошибка при сборе исторических данных для {coin_id}: {e}")
 
-        logger.info(f"[{datetime.utcnow()}] Пауза 60 секунд перед следующей монетой...")
+        logger.debug(f"[{datetime.utcnow()}] Пауза 60 секунд перед следующей монетой...")
         time.sleep(60)
 
     return all_records
@@ -197,6 +211,6 @@ def collect_social_data_for_all(coins: List[str]):
             posts = collect_social_data(coin_id)
             all_posts.extend(posts)
         except Exception as e:
-            logger.info(f"[{datetime.utcnow()}] Ошибка при сборе постов для {coin_id}: {e}")
+            logger.debug(f"[{datetime.utcnow()}] Ошибка при сборе постов для {coin_id}: {e}")
 
     return all_posts

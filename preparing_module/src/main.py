@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from flask import request
 from transformers import pipeline
 from bertopic import BERTopic
 from sentence_transformers import SentenceTransformer
@@ -6,8 +6,6 @@ import pandas as pd
 import umap
 
 from src.db import db
-from src.models.post_list import PostList
-from src.models.historical_data import HistoricalData
 
 
 # Инициализация моделей
@@ -41,8 +39,9 @@ def write_to_mongo(collection : str, df : pd.DataFrame) -> None:
     db[collection].delete_many({})
     db[collection].insert_many(records)
 
-def process_data(post_list: PostList):
+def process_data():
     # Преобразование данных в DataFrame
+    value = request.get_json()
     data = [{
         "text": post.text,
         "timestamp": post.timestamp,
@@ -130,7 +129,7 @@ def process_data(post_list: PostList):
         "volume_by_time_bucket": volume_by_bucket.to_dict()
     }
 
-def upload_historical_data(historical_data: HistoricalData):
+def upload_historical_data():
     data = [{
         "timestamp": record.timestamp,
         "open": record.open,
