@@ -1,10 +1,29 @@
 import pandas as pd
 import numpy as np
 
-def prepare_data(features_path="output/processed_features.csv", historical_path="output/processed_historical_data.csv",
+from src.db import db
+
+def read_from_db(collection : str) -> pd.DataFrame:
+    docs = list(db[collection].find())
+    df_from_mongo = pd.DataFrame(docs)
+
+    df_from_mongo.drop(columns=["_id"], inplace=True)
+    return df_from_mongo
+
+def check_collection_existance(collection : str) -> bool:
+    return collection in db.list_collection_names()
+
+def write_to_mongo(collection : str, df : pd.DataFrame) -> None:
+    records = df.to_dict(orient="records")
+    db[collection].delete_many({})
+    db[collection].insert_many(records)
+    
+
+def prepare_data(features_path="processed_features", historical_path="processed_historical_data",
                  sequence_length=24, prediction_horizon=1):
-    features_df = pd.read_csv(features_path)
-    historical_df = pd.read_csv(historical_path)
+    
+    features_df = read_from_db(features_path)
+    historical_df = read_from_db(historical_path)
 
     features_df['time_bucket'] = pd.to_datetime(features_df['time_bucket']).dt.tz_localize(None)
     historical_df['timestamp'] = pd.to_datetime(historical_df['timestamp']).dt.tz_localize(None)

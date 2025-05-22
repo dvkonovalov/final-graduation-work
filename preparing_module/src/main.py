@@ -41,17 +41,21 @@ def write_to_mongo(collection : str, df : pd.DataFrame) -> None:
 
 def process_data():
     # Преобразование данных в DataFrame
-    value = request.get_json()
+    values = request.get_json()
+    payload = values.get('payload')
+    
+    post_list = payload.get('data')
+    
     data = [{
-        "text": post.text,
-        "timestamp": post.timestamp,
-        "hashtags": post.hashtags
-    } for post in post_list.posts]
+        "text": post.get('text'),
+        "timestamp": post.get('timestamp'),
+        "hashtags": post.get('hashtags')
+    } for post in post_list.get('posts')]
 
     # Если передан путь к дополнительным данным - загружаем их
-    if post_list.path:
+    if post_list.get('path'):
         try:
-            extra_df = read_from_db(post_list.path)
+            extra_df = read_from_db(post_list.get('path'))
             extra_df['timestamp'] = pd.to_datetime(extra_df['timestamp'])
             # Добавляем данные из файла
             data.extend(extra_df.to_dict(orient='records'))
@@ -130,22 +134,27 @@ def process_data():
     }
 
 def upload_historical_data():
+    values = request.get_json()
+    payload = values.get('payload')
+    
+    historical_data = payload.get('data')
+    
     data = [{
-        "timestamp": record.timestamp,
-        "open": record.open,
-        "high": record.high,
-        "low": record.low,
-        "close": record.close,
-        "volume": record.volume
-    } for record in historical_data.data]
+        "timestamp": record.get('timestamp'),
+        "open": record.get('open'),
+        "high": record.get('high'),
+        "low": record.get('low'),
+        "close": record.get('close'),
+        "volume": record.get('volume')
+    } for record in historical_data.get('data')]
 
     df = pd.DataFrame(data)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
 
     # Если передан путь к дополнительным данным - загружаем их
-    if historical_data.path:
+    if historical_data.get('path'):
         try:
-            extra_df = read_from_db(historical_data.path)
+            extra_df = read_from_db(historical_data.get('path'))
             extra_df['timestamp'] = pd.to_datetime(extra_df['timestamp'])
             df = pd.concat([extra_df, df], ignore_index=True)
         except Exception as e:

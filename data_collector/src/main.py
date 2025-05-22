@@ -1,7 +1,6 @@
 import os
 import requests
 import pandas as pd
-import schedule
 import time
 from datetime import datetime, timedelta
 import praw
@@ -15,7 +14,6 @@ CONFIG = {}
 
 CONFIG['collection_interval_hours'] = os.environ.get('collection_interval_hours')
 CONFIG['collection_interval_minutes'] = os.environ.get('collection_interval_minutes')
-CONFIG['fastapi_base_url'] = os.environ.get('fastapi_base_url')
 
 CONFIG['historical_days'] = os.environ.get('historical_days')
 
@@ -35,9 +33,6 @@ reddit = praw.Reddit(
     password=reddit_config['password'],
     user_agent=reddit_config['user_agent']
 )
-
-# Адрес FastAPI сервера
-FASTAPI_URL = CONFIG['fastapi_base_url']
 
 # Монеты для сбора
 COINS = {
@@ -95,14 +90,13 @@ def collect_historical_data(coin_id: str):
     Сбор исторических данных для одной монеты и резервное копирование
     """
     headers = {
-        "User-Agent": "CryptoDataCollectorBot/1.0",
         "x-cg-pro-api-key": "CG-qmG711yyLriQUS8GE4RfSbed"
     }
 
     ohlc_url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/ohlc"
     params = {
         "vs_currency": "usd",
-        "days": CONFIG.get('historical_days', 90)
+        "days": int(CONFIG.get('historical_days', 90))
     }
     ohlc_response = requests.get(ohlc_url, params=params, headers=headers)
     ohlc_response.raise_for_status()
@@ -116,11 +110,14 @@ def collect_historical_data(coin_id: str):
     volume_url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
     volume_params = {
         "vs_currency": "usd",
-        "days": CONFIG.get('historical_days', 2)
+        "days": int(CONFIG.get('historical_days', 90))
     }
-    volume_response = requests.get(volume_url, params=volume_params)
+    logger.debug(volume_url)
+    logger.debug(volume_params)
+    volume_response = requests.get(volume_url, params=volume_params, headers=headers)
     volume_response.raise_for_status()
     volume_data = volume_response.json()
+    time.sleep(60)
 
     volumes = volume_data.get('total_volumes', [])
     volume_dict = {int(ts): vol for ts, vol in volumes}

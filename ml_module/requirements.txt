@@ -1,9 +1,10 @@
-fastapi
-uvicorn
-pandas
-numpy
-torch
-xgboost
-lightgbm
-scikit-learn
-joblib
+torch==2.7.0
+Flask[async] == 3.1.0
+boto3 == 1.38.21
+pandas == 2.2.3
+numpy == 2.2.6
+xgboost == 3.0.1
+lightgbm == 4.6.0
+scikit-learn == 1.6.1
+joblib == 1.5.0
+pymongo == 4.13.0

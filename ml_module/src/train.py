@@ -1,7 +1,3 @@
-# train.py
-
-import pandas as pd
-import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
@@ -10,7 +6,7 @@ import lightgbm as lgb
 import os
 import joblib
 
-from utils import prepare_data
+from src.utils import prepare_data
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

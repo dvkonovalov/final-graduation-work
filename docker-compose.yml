@@ -1,56 +1,98 @@
 version: '3'
 services:
-  # web:
-  #   build:
-  #     context: app
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5000:5000"
-  #   volumes:
-  #     - ./app:/app
-  #   depends_on:
-  #     - database
-  #   networks:
-  #     - crypto-network
-    
-  datacollector:
+  web:
     build:
-      context: data_collector
+      context: app
       dockerfile: Dockerfile
     environment:
-      collection_interval_hours: ${collection_interval_hours}
-      collection_interval_minutes: ${collection_interval_minutes}
-      fastapi_base_url: ${fastapi_base_url}
-      reddit_client_id: ${reddit_client_id}
-      reddit_client_secret: ${reddit_client_secret}
-      reddit_username: ${reddit_username}
-      reddit_password: ${reddit_password}
-      reddit_user_agent: ${reddit_user_agent}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5001:5001"
+      - "5000:5000"
+    volumes:
+      - ./app:/app
     depends_on:
       - database
-      - mongodb
     networks:
       - crypto-network
+    
+  # datacollector:
+  #   build:
+  #     context: data_collector
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     collection_interval_hours: ${collection_interval_hours}
+  #     collection_interval_minutes: ${collection_interval_minutes}
+  #     reddit_client_id: ${reddit_client_id}
+  #     reddit_client_secret: ${reddit_client_secret}
+  #     reddit_username: ${reddit_username}
+  #     reddit_password: ${reddit_password}
+  #     reddit_user_agent: ${reddit_user_agent}
+  #     historical_days: ${historical_days}
+  #   ports:
+  #     - "5001:5001"
+  #   depends_on:
+  #     - database
+  #     - mongodb
+  #     - gateway
+  #   networks:
+  #     - crypto-network
+
+  # preparing:
+  #   build:
+  #     context: preparing_module
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "5002:5002"
+  #   depends_on:
+  #     - mongodb
+  #   networks:
+  #     - crypto-network
 
   # gateway:
   #   build:
   #     context: api_gateway
   #     dockerfile: Dockerfile
   #   ports:
-  #     - "5050:5050"
+  #     - "5010:5010"
   #   depends_on:
   #     - database
   #     - mongodb
+  #     - preparing
   #   networks:
   #     - crypto-network
+
+  # ml_module:
+  #   build:
+  #     context: ml_module
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "5003:5003"
+  #   depends_on:
+  #     - mongodb
+  #     - minio
+  #   networks:
+  #     - crypto-network
+
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"  # порт для веб-интерфейса (опциональный)
+    volumes:
+      - ./data:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: ["server", "/data"]
 
   mongodb:
     image: mongo
     environment:
-      MONGO_INITDB_ROOT_USERNAME: username
-      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     ports:
       - "27017:27017"
     volumes:
@@ -61,9 +103,9 @@ services:
   database:
     image: postgres
     environment:
-      POSTGRES_USER: username
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: crypto
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
@@ -71,28 +113,28 @@ services:
     networks:
       - crypto-network
 
-  # prometheus:
-  #   image: prom/prometheus
-  #   container_name: prometheus
-  #   volumes:
-  #     - ./prometheus:/etc/prometheus
-  #   command:
-  #     - '--config.file=/etc/prometheus/prometheus.yml'
-  #     - '--storage.tsdb.path=/prometheus'
-  #   ports:
-  #     - "9090:9090"
-  #   networks:
-  #     - crypto-network
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    networks:
+      - crypto-network
 
-  # grafana:
-  #   image: grafana/grafana
-  #   container_name: grafana
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - prometheus
-  #   networks:
-  #     - crypto-network
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - crypto-network
 
 
 volumes:

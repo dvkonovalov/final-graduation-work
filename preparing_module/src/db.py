@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-
-client = MongoClient("mongodb://username:password@mongodb:27017/")
+import os
+client = MongoClient(f"mongodb://{os.environ.get('MONGO_INITDB_ROOT_USERNAME')}:{os.environ.get('MONGO_INITDB_ROOT_PASSWORD')}@mongodb/")
 
 db = client["training_data"]

@@ -1,0 +1,8 @@
+pyyaml == 5.3.1
+Flask[async] == 3.1.0
+sentencepiece == 0.2.0
+transformers
+sentence-transformers
+pandas == 2.2.3
+umap-learn == 0.5.2
+pymongo == 4.13.0

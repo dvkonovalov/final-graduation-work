@@ -1,5 +1,6 @@
-from flask import request
 import json
+import requests
+
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
@@ -9,18 +10,54 @@ from cryptography.hazmat.primitives.asymmetric import padding
 
 from src.logger import logger
 
+
 def init_session():
-    with open('../private_key.pem', 'rb') as priv_file:
+        
+    request_data = {
+        "sub" : "data_collector",
+    }
+    
+    signature = sign(request_data)
+    
+    logger.debug(signature.hex())
+    
+    r = requests.post(
+        'http://gateway:5010/init_session',
+        json={'payload': request_data},
+        headers={'X-SIGNATURE': signature.hex()},
+        timeout=10
+    )
+    
+    return r.json().get('jti')
+
+def proxy(jti : str, path : str, data : dict, method=None):
+    request_data = {
+        'jti' : jti,
+        'data' : data,
+        'path' : path,
+        'sub' : 'data_collector'
+    }
+    logger.debug(request_data)
+    signature = sign(request_data)
+    
+    
+    r = requests.post(
+        'http://gateway:5010/proxy',
+        json={'payload': request_data},
+        headers={'X-SIGNATURE': signature.hex()},
+        timeout=10
+    )
+    
+    return r.json()
+
+def sign(request_data):
+    with open('private_key.pem', 'rb') as priv_file:
         private_key_loaded = load_pem_private_key(
             priv_file.read(),
             password=b'dba21ddc-665d-40e5-8f54-8fbae6c40192',
             backend=default_backend()
         )
         
-    request_data = {
-        "sub" : "data_collector"
-    }
-    
     data_string = json.dumps(request_data, sort_keys=True)
     
     signature = private_key_loaded.sign(
@@ -31,12 +68,5 @@ def init_session():
         ),
         algorithm=hashes.SHA256()
     )
-    
-    r = request.post(
-        'http://localhost:5001/check',
-        json={'payload': request_data},
-        headers={'X-SIGNATURE': signature.hex()}
-    )
-    
-    logger.info(r.json())
+    return signature
     

@@ -18,6 +18,7 @@ def index():
 async def update():
     button_clicks.inc()
     date = request.args.get('created_date')
+    
     last_prediction_time = None
     try:
         last_prediction_time = datetime.datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %Z")
@@ -51,6 +52,18 @@ async def update():
         })
     # logger.debug(jsonify(result))
     logger.debug(result)
+    return jsonify(result)
+
+def get_all_data():
+    currencies = Cryptocurrency.query.all()
+    result = []
+    for currency in currencies:
+        result.append({
+            "name": currency.name,
+            "price": currency.price,
+            "change": currency.change,
+            "created_date": currency.created_date,
+        })
     return jsonify(result)
 
 async def save_changes(data) -> None:
