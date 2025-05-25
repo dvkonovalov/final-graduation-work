@@ -6,6 +6,7 @@ import pandas as pd
 import umap
 
 from src.db import db
+from src.logger import logger
 
 
 # Инициализация моделей
@@ -45,6 +46,9 @@ def process_data():
     payload = values.get('payload')
     
     post_list = payload.get('data')
+    
+    if not post_list:
+        return {"status": "error", "message": "Not enough data. At least 10 records are required."}
     
     data = [{
         "text": post.get('text'),
@@ -136,9 +140,10 @@ def process_data():
 def upload_historical_data():
     values = request.get_json()
     payload = values.get('payload')
-    
+    logger.debug(payload)
     historical_data = payload.get('data')
-    
+    if not historical_data:
+        return {"status": "error", "message": "Not enough data. At least 1 record is required."}
     data = [{
         "timestamp": record.get('timestamp'),
         "open": record.get('open'),
@@ -146,13 +151,13 @@ def upload_historical_data():
         "low": record.get('low'),
         "close": record.get('close'),
         "volume": record.get('volume')
-    } for record in historical_data.get('data')]
+    } for record in historical_data]
 
     df = pd.DataFrame(data)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
 
     # Если передан путь к дополнительным данным - загружаем их
-    if historical_data.get('path'):
+    if payload.get('path'):
         try:
             extra_df = read_from_db(historical_data.get('path'))
             extra_df['timestamp'] = pd.to_datetime(extra_df['timestamp'])

@@ -40,7 +40,8 @@ def job():
             path="http://preparing:5002/upload-historical-data",
             data=hist_payload
         )
-        r.raise_for_status()
+        if r['status'] == 'error':
+            ValueError("'Not enough data. At least 1 record is required.")
         logger.debug(f"[{datetime.utcnow()}] Исторические данные успешно отправлены ({len(historical)} шт.)")
     except Exception as e:
         logger.debug(f"[{datetime.utcnow()}] Ошибка отправки исторических данных: {e}")

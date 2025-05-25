@@ -3,4 +3,5 @@ from prometheus_client import Counter
 
 db = SQLAlchemy()
 
-button_clicks = Counter('button_clicks', 'Number of button clicks')
+update_clicks = Counter('update_clicks', 'Number of Update button clicks')
+site_entered = Counter('site_entered', 'Number of site enters')

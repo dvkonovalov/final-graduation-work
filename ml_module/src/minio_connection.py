@@ -1,6 +1,9 @@
 import boto3
 from botocore.client import Config
 import os
+from io import BytesIO
+
+from src.logger import logger
 
 s3_client = boto3.client(
     service_name="s3",
@@ -11,22 +14,22 @@ s3_client = boto3.client(
 )
 
 
-bucket_name = "test-bucket"
+bucket_name = "model-bucket"
 try:
     s3_client.create_bucket(Bucket=bucket_name)
 except Exception as e:
     print(f"Bucket {bucket_name} already exists or error occurred:", str(e))
 
-object_name = "example.txt"
-content = "Hello from MinIO!"
-response = s3_client.put_object(Bucket=bucket_name, Key=object_name, Body=content.encode())
+def put_object(object_name : str, buffer : BytesIO):
+    response = s3_client.upload_fileobj(buffer, bucket_name, object_name)
 
-if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-    print("File uploaded successfully.")
-else:
-    print("Error uploading file.")
-
-# Теперь считываем этот файл обратно
-obj = s3_client.get_object(Bucket=bucket_name, Key=object_name)
-body = obj['Body'].read().decode('utf-8')
-print(body)
+    if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+        logger.debug("File uploaded successfully.")
+    else:
+        logger.debug("Error uploading file.")
+        
+def get_object(object_name : str):
+    obj = s3_client.get_object(Bucket=bucket_name, Key=object_name)
+    body = obj['Body'].read()
+    logger.debug(body)
+    return body

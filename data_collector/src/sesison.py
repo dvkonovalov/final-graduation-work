@@ -1,5 +1,6 @@
 import json
 import requests
+import os
 
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import hashes
@@ -16,10 +17,7 @@ def init_session():
     request_data = {
         "sub" : "data_collector",
     }
-    
     signature = sign(request_data)
-    
-    logger.debug(signature.hex())
     
     r = requests.post(
         'http://gateway:5010/init_session',
@@ -54,7 +52,7 @@ def sign(request_data):
     with open('private_key.pem', 'rb') as priv_file:
         private_key_loaded = load_pem_private_key(
             priv_file.read(),
-            password=b'dba21ddc-665d-40e5-8f54-8fbae6c40192',
+            password= os.environ.get('private_key_data_collector').encode('utf-8'),
             backend=default_backend()
         )
         

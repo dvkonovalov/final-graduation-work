@@ -3,10 +3,11 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 import xgboost as xgb
 import lightgbm as lgb
-import os
 import joblib
+from io import BytesIO
 
 from src.utils import prepare_data
+from src.minio_connection import put_object
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -14,8 +15,6 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 SEQUENCE_LENGTH = 12  # 12 x 10 минут = 2 часа истории на вход
 PREDICTION_HORIZON = 6  # Предсказываем через 1 час = 6 шагов по 10 минут
 
-# Папка для моделей
-os.makedirs("models", exist_ok=True)
 
 # ----- LSTM модель -----
 class LSTMModel(nn.Module):
@@ -84,10 +83,16 @@ def train_models():
 
     xgb_model = xgb.XGBRegressor(n_estimators=100)
     xgb_model.fit(X_train_flat, y_train)
-    joblib.dump(xgb_model, "models/xgb_model.pkl")
+    
+    buffer = BytesIO()
+    joblib.dump(xgb_model, buffer)
+    put_object("xgb_model.pkl", buffer)
     print("✅ XGBoost model saved.")
 
     lgb_model = lgb.LGBMRegressor(n_estimators=100)
     lgb_model.fit(X_train_flat, y_train)
-    joblib.dump(lgb_model, "models/lgb_model.pkl")
+    
+    buffer = BytesIO()
+    joblib.dump(lgb_model, buffer)
+    put_object("lgb_model.pkl", buffer)
     print("✅ LightGBM model saved.")

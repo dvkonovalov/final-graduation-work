@@ -1,5 +1,9 @@
 import torch
 from train import LSTMModel, DEVICE
+from io import BytesIO
+
+from src.minio_connection import get_object
+from src.logger import logger
 
 
 def predict_price(features):
@@ -14,9 +18,10 @@ def predict_price(features):
 
     # Загружаем веса модели
     try:
-        lstm_model.load_state_dict(torch.load("models/lstm_model.pt", map_location=DEVICE))
+        model_data = BytesIO(get_object("lstm_model.pt"))
+        lstm_model.load_state_dict(torch.load(model_data, map_location=DEVICE))
     except RuntimeError as e:
-        print(f"Error loading model: {e}")
+        logger.debug(f"Error loading model: {e}")
         return None
 
     # Прогноз

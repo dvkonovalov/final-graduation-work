@@ -1,7 +1,7 @@
 from flask import render_template, jsonify, request
 import random
 from src.models.cryptocurrency import Cryptocurrency
-from src.db import db, button_clicks
+from src.db import db, update_clicks, site_entered
 import datetime
 from src.logger import logger
 
@@ -16,7 +16,7 @@ def index():
 
 
 async def update():
-    button_clicks.inc()
+    update_clicks.inc()
     date = request.args.get('created_date')
     
     last_prediction_time = None
@@ -24,7 +24,6 @@ async def update():
         last_prediction_time = datetime.datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %Z")
     except:
         logger.warning(f"Невозможно конвертировать {date} в DateTime!")
-    logger.debug(last_prediction_time)
     currencies = [
         {"name": "Bitcoin", "price": random.randint(40000, 50000), "change": random.uniform(-5, 5)},
         {"name": "Ethereum", "price": random.randint(3000, 4000), "change": random.uniform(-5, 5)},
@@ -40,7 +39,6 @@ async def update():
     if last_prediction_time is not None:
         currencies = Cryptocurrency.query.filter(Cryptocurrency.created_date > last_prediction_time).all()
     else:
-        logger.debug('get')
         currencies = Cryptocurrency.query.all()
     result = []
     for currency in currencies:
@@ -50,11 +48,10 @@ async def update():
             "change": currency.change,
             "created_date": currency.created_date,
         })
-    # logger.debug(jsonify(result))
-    logger.debug(result)
     return jsonify(result)
 
 def get_all_data():
+    site_entered.inc()
     currencies = Cryptocurrency.query.all()
     result = []
     for currency in currencies:

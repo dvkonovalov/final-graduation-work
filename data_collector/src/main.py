@@ -36,8 +36,8 @@ reddit = praw.Reddit(
 
 # Монеты для сбора
 COINS = {
-    "bitcoin": "Bitcoin",
-    "ethereum": "Ethereum",
+    # "bitcoin": "Bitcoin",
+    # "ethereum": "Ethereum",
     "litecoin": "Litecoin"
 }
 
@@ -53,9 +53,9 @@ def check_collection_existance(collection : str) -> bool:
 
 def write_to_mongo(collection : str, df : pd.DataFrame) -> None:
     records = df.to_dict(orient="records")
-    db[collection].delete_many({})
-    db[collection].insert_many(records)
-
+    r = db[collection].delete_many({})
+    r = db[collection].insert_many(records)
+    
 def save_backup(data: List[dict], mode: str):
     """
     Сохраняем данные в отдельные файлы по монетам
@@ -74,14 +74,17 @@ def save_backup(data: List[dict], mode: str):
 
     for coin_id, coin_df in df.groupby("coin"):
         base_collection = f"backup_{mode}_{coin_id}"
-
         if check_collection_existance(base_collection):
             existing_df = read_from_db(base_collection)
             combined_df = pd.concat([existing_df, coin_df], ignore_index=True)
         else:
             combined_df = coin_df
-
-        combined_df.drop_duplicates(inplace=True)
+        if mode == "posts":
+            combined_df['hash_values'] = combined_df['hashtags'].apply(tuple)
+            combined_df.drop_duplicates(subset=['coin', 'text', 'timestamp', 'hash_values'], inplace=True)
+            combined_df.drop(columns=['hash_values'], inplace=True)
+        else:
+            combined_df.drop_duplicates(inplace=True)
         write_to_mongo(base_collection, combined_df)
         logger.debug(f"[{datetime.utcnow()}] Данные для {coin_id} сохранены в коллекцию {base_collection} (всего {len(combined_df)} записей).")
 
@@ -112,8 +115,6 @@ def collect_historical_data(coin_id: str):
         "vs_currency": "usd",
         "days": int(CONFIG.get('historical_days', 90))
     }
-    logger.debug(volume_url)
-    logger.debug(volume_params)
     volume_response = requests.get(volume_url, params=volume_params, headers=headers)
     volume_response.raise_for_status()
     volume_data = volume_response.json()
@@ -180,7 +181,7 @@ def collect_social_data(coin_id: str):
     subreddit_name = COINS[coin_id]
     subreddit = reddit.subreddit(subreddit_name)
 
-    time_threshold = datetime.utcnow() - timedelta(hours=CONFIG['collection_interval_hours'])
+    time_threshold = datetime.utcnow() - timedelta(hours=int(CONFIG['collection_interval_hours']))
     posts = []
     for post in subreddit.new(limit=100):
         post_time = datetime.utcfromtimestamp(post.created_utc)
