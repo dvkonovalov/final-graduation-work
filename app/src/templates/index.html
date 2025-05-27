@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Crypto Forecast</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
@@ -23,7 +24,10 @@
     <!-- BTC Tab -->
     <div id="btc" class="tab-content">
       <canvas id="btcChart" class="w-full h-64"></canvas>
-      <button class="update-button mt-4 bg-blue-500 text-white px-4 py-2 rounded-xl" data-coin="btc">Обновить данные</button>
+      <div class="flex gap-4 mt-4">
+        <button class="update-button bg-blue-500 text-white px-4 py-2 rounded-xl" data-coin="btc">Обновить данные</button>
+        <button onclick="resetZoom('btcChart')" class="bg-gray-500 text-white px-4 py-2 rounded-xl">Сбросить масштаб</button>
+      </div>
       <table class="mt-6 w-full text-left bg-white shadow-md rounded-lg overflow-hidden" id="btc-table">
         <thead class="bg-gray-200">
           <tr>
@@ -39,7 +43,10 @@
     <!-- ETH Tab -->
     <div id="eth" class="tab-content hidden">
       <canvas id="ethChart" class="w-full h-64"></canvas>
-      <button class="update-button mt-4 bg-blue-500 text-white px-4 py-2 rounded-xl" data-coin="eth">Обновить данные</button>
+      <div class="flex gap-4 mt-4">
+        <button class="update-button bg-blue-500 text-white px-4 py-2 rounded-xl" data-coin="eth">Обновить данные</button>
+        <button onclick="resetZoom('ethChart')" class="bg-gray-500 text-white px-4 py-2 rounded-xl">Сбросить масштаб</button>
+      </div>
       <table class="mt-6 w-full text-left bg-white shadow-md rounded-lg overflow-hidden" id="eth-table">
         <thead class="bg-gray-200">
           <tr>
@@ -55,7 +62,10 @@
     <!-- LTC Tab -->
     <div id="ltc" class="tab-content hidden">
       <canvas id="ltcChart" class="w-full h-64"></canvas>
-      <button class="update-button mt-4 bg-blue-500 text-white px-4 py-2 rounded-xl" data-coin="ltc">Обновить данные</button>
+      <div class="flex gap-4 mt-4">
+        <button class="update-button bg-blue-500 text-white px-4 py-2 rounded-xl" data-coin="ltc">Обновить данные</button>
+        <button onclick="resetZoom('ltcChart')" class="bg-gray-500 text-white px-4 py-2 rounded-xl">Сбросить масштаб</button>
+      </div>
       <table class="mt-6 w-full text-left bg-white shadow-md rounded-lg overflow-hidden" id="ltc-table">
         <thead class="bg-gray-200">
           <tr>

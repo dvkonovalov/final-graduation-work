@@ -7,12 +7,7 @@ from src.logger import logger
 
 
 def index():
-    currencies = [
-        {"name": "Bitcoin", "price": 45000, "change": 2.3},
-        {"name": "Ethereum", "price": 3200, "change": -1.5},
-        {"name": "Litecoin", "price": 180, "change": 0.7}
-    ]
-    return render_template('index.html', currencies=currencies)
+    return render_template('index.html')
 
 
 async def update():

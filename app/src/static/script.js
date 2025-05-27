@@ -21,6 +21,10 @@ function showTab(tabId) {
     console.log(document.querySelectorAll('.tab-btn'));
 }
 
+function resetZoom(chartId) {
+      if (charts[chartId]) charts[chartId].resetZoom();
+    }
+
 function createChart(id, label, labels, data) {
     const ctx = document.getElementById(id).getContext('2d');
     if (charts[id]) charts[id].destroy();
