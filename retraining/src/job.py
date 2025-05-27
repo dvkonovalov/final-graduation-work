@@ -1,9 +1,11 @@
 import pandas as pd
 from datetime import datetime, timedelta
+from flask import jsonify
 
 from src.models.cryptocurrency import Cryptocurrency
 from src.db import db, Bitcoin_MSE, Etherium_MSE, Litecoin_MSE
 from src.logger import logger
+from src.session import init_session, proxy
 
 currency_dict = {
     'Bitcoin': Bitcoin_MSE,
@@ -41,5 +43,25 @@ def job():
         df_yesterday = currency_backup.loc[currency_backup['timestamp'].dt.date == yesterday.date]
         if not df_yesterday.empty and currency:
             currency_dict[currency.name].set((df_yesterday["close"] - currency.price)**2)
+    retrain()
+            
+            
+def retrain():
+            
+    jti = init_session()
+    if not jti:
+        return jsonify({'result' : 400})
+    
+
+    try:
+        r = proxy(
+            jti=jti,
+            path="http://ml_module:5003/train",
+        )
+        if r['status'] == 'error':
+            ValueError(r['message'])
+        logger.debug(f"[{datetime.utcnow()}] Задача завершилась успешно")
+    except Exception as e:
+        logger.debug(f"[{datetime.utcnow()}] Ошибка выполнения задачи {e}")
         
         

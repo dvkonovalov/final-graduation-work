@@ -24,7 +24,7 @@ CONFIG['reddit']['username'] = os.environ.get('reddit_username')
 CONFIG['reddit']['password'] = os.environ.get('reddit_password')
 CONFIG['reddit']['user_agent'] = os.environ.get('reddit_user_agent')
 
-# Инициализация Reddit клиента
+
 reddit_config = CONFIG['reddit']
 reddit = praw.Reddit(
     client_id=reddit_config['client_id'],
@@ -34,10 +34,10 @@ reddit = praw.Reddit(
     user_agent=reddit_config['user_agent']
 )
 
-# Монеты для сбора
+
 COINS = {
-    # "bitcoin": "Bitcoin",
-    # "ethereum": "Ethereum",
+    "bitcoin": "Bitcoin",
+    "ethereum": "Ethereum",
     "litecoin": "Litecoin"
 }
 
@@ -57,15 +57,12 @@ def write_to_mongo(collection : str, df : pd.DataFrame) -> None:
     r = db[collection].insert_many(records)
     
 def save_backup(data: List[dict], mode: str):
-    """
-    Сохраняем данные в отдельные файлы по монетам
-    """
     df = pd.DataFrame(data)
     if df.empty:
         logger.debug(f"[{datetime.utcnow()}] Нет данных для резервного копирования ({mode}).")
         return
 
-    # Убедимся, что coin — строка
+    
     df["coin"] = df["coin"].apply(lambda x: x[0] if isinstance(x, list) else x)
 
     if "coin" not in df.columns:
@@ -89,9 +86,6 @@ def save_backup(data: List[dict], mode: str):
         logger.debug(f"[{datetime.utcnow()}] Данные для {coin_id} сохранены в коллекцию {base_collection} (всего {len(combined_df)} записей).")
 
 def collect_historical_data(coin_id: str):
-    """
-    Сбор исторических данных для одной монеты и резервное копирование
-    """
     headers = {
         "x-cg-pro-api-key": "CG-qmG711yyLriQUS8GE4RfSbed"
     }
@@ -151,15 +145,12 @@ def collect_historical_data(coin_id: str):
             "volume": closest_volume
         })
 
-    # Сохраняем сразу
+    
     save_backup(records, "historical")
 
     return records
 
 def collect_historical_data_for_all(coins: List[str]):
-    """
-    Сбор исторических данных для всех монет
-    """
     all_records = []
 
     for coin_id in coins:
@@ -175,9 +166,6 @@ def collect_historical_data_for_all(coins: List[str]):
     return all_records
 
 def collect_social_data(coin_id: str):
-    """
-    Сбор постов с Reddit по монете и резервное копирование
-    """
     subreddit_name = COINS[coin_id]
     subreddit = reddit.subreddit(subreddit_name)
 
@@ -193,15 +181,12 @@ def collect_social_data(coin_id: str):
                 "hashtags": [tag.strip("#") for tag in post.title.split() if tag.startswith("#")]
             })
 
-    # Сохраняем сразу
+
     save_backup(posts, "posts")
 
     return posts
 
 def collect_social_data_for_all(coins: List[str]):
-    """
-    Сбор постов для всех монет
-    """
     all_posts = []
 
     for coin_id in coins:

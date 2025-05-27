@@ -3,20 +3,33 @@ from transformers import pipeline
 from bertopic import BERTopic
 from sentence_transformers import SentenceTransformer
 import pandas as pd
+import numpy as np
 import umap
 
 from src.db import db
 from src.logger import logger
 
 
-# Инициализация моделей
 sentiment_pipeline = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
 embedding_model = SentenceTransformer('./local_models/all-MiniLM-L6-v2')
 umap_model = umap.UMAP(n_neighbors=2, n_components=2, min_dist=0.0, metric='cosine')
 topic_model = BERTopic(embedding_model=embedding_model, umap_model=umap_model)
 
+def split_and_analyze(texts):
+    results = []
+    for text in texts:
+        chunks = [text[i:i+512] for i in range(0, len(text), 512)]
+        chunk_results = []
+        for chunk in chunks:
+            output = sentiment_pipeline(chunk)
+            chunk_results.append(output[0])
+        labeles = [float(chunk['score']) * int(chunk['label'][0]) for chunk in chunk_results]
+        scores = [float(chunk['score']) for chunk in chunk_results]
+        avg_labeles = round(np.mean(labeles))
+        results.append({'label': f"{avg_labeles} stars", 'score': np.mean(scores).item()})
+    return results
 
-# Сентимент маппинг
+
 def map_sentiment(label):
     if "1" in label or "2" in label:
         return -1
@@ -41,11 +54,8 @@ def write_to_mongo(collection : str, df : pd.DataFrame) -> None:
     db[collection].insert_many(records)
 
 def process_data():
-    # Преобразование данных в DataFrame
     values = request.get_json()
-    payload = values.get('payload')
-    
-    post_list = payload.get('data')
+    post_list = values.get('payload')
     
     if not post_list:
         return {"status": "error", "message": "Not enough data. At least 10 records are required."}
@@ -56,38 +66,31 @@ def process_data():
         "hashtags": post.get('hashtags')
     } for post in post_list.get('posts')]
 
-    # Если передан путь к дополнительным данным - загружаем их
     if post_list.get('path'):
         try:
             extra_df = read_from_db(post_list.get('path'))
             extra_df['timestamp'] = pd.to_datetime(extra_df['timestamp'])
-            # Добавляем данные из файла
             data.extend(extra_df.to_dict(orient='records'))
         except Exception as e:
             return {"status": "error", "message": f"Failed to load collection: {str(e)}"}
-
-    # Проверка на количество записей
+    
     if len(data) < 10:
         return {"status": "error", "message": "Not enough data. At least 10 records are required."}
 
     df = pd.DataFrame(data)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
 
-    # Проверка на наличие текста
     if df['text'].isnull().all():
         return {"status": "error", "message": "No valid text data provided for processing"}
 
-    # Округляем время по 10 минутам
     df['time_bucket'] = df['timestamp'].dt.floor('10T')
 
-    # Выполним сентимент-анализ
-    sentiments = sentiment_pipeline(df['text'].tolist())
+    sentiments = split_and_analyze(df['text'].tolist())
     df['sentiment_label'] = [s['label'] for s in sentiments]
     df['sentiment_score'] = [s['score'] for s in sentiments]
 
     df['sentiment_mapped'] = df['sentiment_label'].apply(map_sentiment)
 
-    # Выполним тематический анализ (проверка на пустой список)
     texts = df['text'].tolist()
     if not texts:
         return {"status": "error", "message": "No valid text data for topic modeling"}
@@ -95,25 +98,20 @@ def process_data():
     topics, probs = topic_model.fit_transform(texts)
     df['topic'] = topics
 
-    # ---------------- Новый блок создания фичей ----------------
-    # Временные признаки
-    df['hour_of_day'] = df['timestamp'].dt.hour
-    df['day_of_week'] = df['timestamp'].dt.dayofweek  # Monday=0, Sunday=6
 
-    # Объем сообщений в каждом интервале
+    df['hour_of_day'] = df['timestamp'].dt.hour
+    df['day_of_week'] = df['timestamp'].dt.dayofweek
+
     volume_by_bucket = df.groupby('time_bucket').size().rename('volume')
 
-    # Агрегация сентимента по времени
     sentiment_agg = df.groupby('time_bucket')['sentiment_mapped'].agg(['mean', 'sum', 'count'])
     sentiment_agg.columns = ['sentiment_mean', 'sentiment_sum', 'sentiment_count']
 
-    # Частота топ-5 тем
     topic_counts = df.groupby(['time_bucket', 'topic']).size().unstack(fill_value=0)
     top_topics = topic_counts.sum(axis=0).sort_values(ascending=False).head(5).index
     topic_counts = topic_counts[top_topics]
     topic_counts.columns = [f"topic_{t}" for t in top_topics]
 
-    # Частота топ-5 хэштегов
     all_hashtags = sum(df['hashtags'], [])
     top_hashtags = pd.Series(all_hashtags).value_counts().head(5).index
 
@@ -122,25 +120,25 @@ def process_data():
 
     hashtag_features = df.groupby('time_bucket')[[f'hashtag_{tag}' for tag in top_hashtags]].sum()
 
-    # Финальный датафрейм признаков
     features = pd.concat([volume_by_bucket, sentiment_agg, topic_counts, hashtag_features], axis=1).fillna(0)
 
-    # ---------------- Конец нового блока ----------------
+    features["time_bucket"] = features.index
+    features.reset_index(drop=True, inplace=True)
 
-    # Сохраним результаты
-    write_to_mongo('output/processed_posts', df)
-    write_to_mongo('output/processed_features', features)
-
+    write_to_mongo('processed_posts', df)
+    write_to_mongo('processed_features', features)
+    
+    volume_by_bucket.index = volume_by_bucket.index.astype(str)
+    
     return {
         "status": "success",
-        "message": "Data processed and saved to output/processed_posts.csv and output/processed_features.csv",
+        "message": "Data processed and saved to processed_posts and processed_features",
         "volume_by_time_bucket": volume_by_bucket.to_dict()
     }
 
 def upload_historical_data():
     values = request.get_json()
     payload = values.get('payload')
-    logger.debug(payload)
     historical_data = payload.get('data')
     if not historical_data:
         return {"status": "error", "message": "Not enough data. At least 1 record is required."}
@@ -156,7 +154,6 @@ def upload_historical_data():
     df = pd.DataFrame(data)
     df['timestamp'] = pd.to_datetime(df['timestamp'])
 
-    # Если передан путь к дополнительным данным - загружаем их
     if payload.get('path'):
         try:
             extra_df = read_from_db(historical_data.get('path'))
@@ -167,9 +164,9 @@ def upload_historical_data():
 
     df = df.sort_values('timestamp')
 
-    write_to_mongo('output/processed_historical_data', df)
+    write_to_mongo('processed_historical_data', df)
 
     return {
         "status": "success",
-        "message": "Historical data processed and saved to output/processed_historical_data"
+        "message": "Historical data processed and saved to processed_historical_data"
     }

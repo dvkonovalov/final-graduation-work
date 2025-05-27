@@ -35,7 +35,6 @@ def proxy(jti : str, path : str, data : dict, method=None):
         'path' : path,
         'sub' : 'data_collector'
     }
-    logger.debug(request_data)
     signature = sign(request_data)
     
     
@@ -43,7 +42,7 @@ def proxy(jti : str, path : str, data : dict, method=None):
         'http://gateway:5010/proxy',
         json={'payload': request_data},
         headers={'X-SIGNATURE': signature.hex()},
-        timeout=10
+        timeout=60
     )
     
     return r.json()
@@ -52,7 +51,7 @@ def sign(request_data):
     with open('private_key.pem', 'rb') as priv_file:
         private_key_loaded = load_pem_private_key(
             priv_file.read(),
-            password= os.environ.get('private_key_data_collector').encode('utf-8'),
+            password= os.environ.get('private_key').encode('utf-8'),
             backend=default_backend()
         )
         

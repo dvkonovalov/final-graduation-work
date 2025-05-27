@@ -1,83 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Crypto Forecast</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-</head>
-<body class="bg-gray-100 text-gray-800 font-sans">
-  <div class="max-w-4xl mx-auto p-6">
-    <h1 class="text-3xl font-bold mb-6 text-center">Crypto Forecast</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Crypto Forecast</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 text-gray-800 font-sans">
+    <div class="max-w-4xl mx-auto p-6">
+      <h1 class="text-3xl font-bold mb-6 text-center">Crypto Forecast</h1>
 
-    <!-- Tabs -->
-    <div class="flex justify-center mb-6">
-      <button onclick="showTab('btc')" class="tab-btn px-4 py-2 mx-2 bg-blue-500 text-white rounded-xl">Bitcoin</button>
-      <button onclick="showTab('eth')" class="tab-btn px-4 py-2 mx-2 bg-blue-500 text-white rounded-xl">Ethereum</button>
-      <button onclick="showTab('ltc')" class="tab-btn px-4 py-2 mx-2 bg-blue-500 text-white rounded-xl">Litecoin</button>
-    </div>
-
-    <!-- BTC Tab -->
-    <div id="btc" class="tab-content">
-      <canvas id="btcChart" class="w-full h-64"></canvas>
-      <div class="flex gap-4 mt-4">
-        <button class="update-button bg-blue-500 text-white px-4 py-2 rounded-xl" data-coin="btc">Обновить данные</button>
-        <button onclick="resetZoom('btcChart')" class="bg-gray-500 text-white px-4 py-2 rounded-xl">Сбросить масштаб</button>
+      <div class="flex justify-center mb-6">
+        <button onclick="showTab('btc')" class="tab-btn px-4 py-2 mx-2 bg-blue-500 text-white rounded-xl">Bitcoin</button>
+        <button onclick="showTab('eth')" class="tab-btn px-4 py-2 mx-2 bg-gray-300 text-gray-800 rounded-xl">Ethereum</button>
+        <button onclick="showTab('ltc')" class="tab-btn px-4 py-2 mx-2 bg-gray-300 text-gray-800 rounded-xl">Litecoin</button>
       </div>
-      <table class="mt-6 w-full text-left bg-white shadow-md rounded-lg overflow-hidden" id="btc-table">
-        <thead class="bg-gray-200">
-          <tr>
-            <th class="py-2 px-4">Название</th>
-            <th class="py-2 px-4">Цена</th>
-            <th class="py-2 px-4">Изменение</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
 
-    <!-- ETH Tab -->
-    <div id="eth" class="tab-content hidden">
-      <canvas id="ethChart" class="w-full h-64"></canvas>
-      <div class="flex gap-4 mt-4">
-        <button class="update-button bg-blue-500 text-white px-4 py-2 rounded-xl" data-coin="eth">Обновить данные</button>
-        <button onclick="resetZoom('ethChart')" class="bg-gray-500 text-white px-4 py-2 rounded-xl">Сбросить масштаб</button>
+      <div id="btc" class="tab-content">
+        <canvas id="btcChart" class="w-full h-64"></canvas>
+        <div class="flex gap-4 mt-4">
+          <button class="update-button bg-blue-500 text-white px-4 py-2 rounded-xl" data-coin="btc">Обновить данные</button>
+          <button onclick="resetZoom('btcChart')" class="bg-gray-500 text-white px-4 py-2 rounded-xl">Сбросить масштаб</button>
+        </div>
+        <table class="mt-6 w-full text-left bg-white shadow-md rounded-lg overflow-hidden" id="btc-table">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="py-2 px-4">Название</th>
+              <th class="py-2 px-4">Цена</th>
+              <th class="py-2 px-4">Изменение</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
-      <table class="mt-6 w-full text-left bg-white shadow-md rounded-lg overflow-hidden" id="eth-table">
-        <thead class="bg-gray-200">
-          <tr>
-            <th class="py-2 px-4">Название</th>
-            <th class="py-2 px-4">Цена</th>
-            <th class="py-2 px-4">Изменение</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
 
-    <!-- LTC Tab -->
-    <div id="ltc" class="tab-content hidden">
-      <canvas id="ltcChart" class="w-full h-64"></canvas>
-      <div class="flex gap-4 mt-4">
-        <button class="update-button bg-blue-500 text-white px-4 py-2 rounded-xl" data-coin="ltc">Обновить данные</button>
-        <button onclick="resetZoom('ltcChart')" class="bg-gray-500 text-white px-4 py-2 rounded-xl">Сбросить масштаб</button>
+      <div id="eth" class="tab-content hidden">
+        <canvas id="ethChart" class="w-full h-64"></canvas>
+        <div class="flex gap-4 mt-4">
+          <button class="update-button bg-blue-500 text-white px-4 py-2 rounded-xl" data-coin="eth">Обновить данные</button>
+          <button onclick="resetZoom('ethChart')" class="bg-gray-500 text-white px-4 py-2 rounded-xl">Сбросить масштаб</button>
+        </div>
+        <table class="mt-6 w-full text-left bg-white shadow-md rounded-lg overflow-hidden" id="eth-table">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="py-2 px-4">Название</th>
+              <th class="py-2 px-4">Цена</th>
+              <th class="py-2 px-4">Изменение</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
-      <table class="mt-6 w-full text-left bg-white shadow-md rounded-lg overflow-hidden" id="ltc-table">
-        <thead class="bg-gray-200">
-          <tr>
-            <th class="py-2 px-4">Название</th>
-            <th class="py-2 px-4">Цена</th>
-            <th class="py-2 px-4">Изменение</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+
+      <div id="ltc" class="tab-content hidden">
+        <canvas id="ltcChart" class="w-full h-64"></canvas>
+        <div class="flex gap-4 mt-4">
+          <button class="update-button bg-blue-500 text-white px-4 py-2 rounded-xl" data-coin="ltc">Обновить данные</button>
+          <button onclick="resetZoom('ltcChart')" class="bg-gray-500 text-white px-4 py-2 rounded-xl">Сбросить масштаб</button>
+        </div>
+        <table class="mt-6 w-full text-left bg-white shadow-md rounded-lg overflow-hidden" id="ltc-table">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="py-2 px-4">Название</th>
+              <th class="py-2 px-4">Цена</th>
+              <th class="py-2 px-4">Изменение</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
-  </div>
-</body>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
 </html>
 

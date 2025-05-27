@@ -15,10 +15,7 @@ function showTab(tabId) {
     });
 
     const index = ['btc', 'eth', 'ltc'].indexOf(tabId);
-    console.log(index);
-    console.log(charts);
     document.querySelectorAll('.tab-btn')[index].classList.add('bg-blue-500', 'text-white');
-    console.log(document.querySelectorAll('.tab-btn'));
 }
 
 function resetZoom(chartId) {
@@ -42,17 +39,48 @@ function createChart(id, label, labels, data) {
         }]
     },
     options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-        y: { beginAtZero: false }
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            zoom: {
+              pan: {
+                enabled: true,
+                mode: 'xy',
+              },
+              zoom: {
+                wheel: {
+                  enabled: true,
+                },
+                pinch: {
+                  enabled: true,
+                },
+                drag: {
+                  enabled: true,
+                  backgroundColor: 'rgba(0,0,0,0.1)',
+                  borderColor: 'rgba(0,0,0,0.3)',
+                  borderWidth: 1,
+                },
+                mode: 'xy',
+              },
+              limits: {
+                y: { min: 'original', max: 'original' },
+                x: { min: 'original', max: 'original' }
+              }
+            }
+          },
+          scales: {
+            y: { beginAtZero: false }
+          },
+          onClick: (e, elements, chart) => {
+            if (e.detail === 2) {
+              chart.resetZoom();
+            }
+          }
         }
-    }
     });
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Стартовые данные
     const init = {
         btc: [],
         eth: [],
@@ -64,39 +92,62 @@ document.addEventListener('DOMContentLoaded', function () {
         ltc: []
     };
 
+    var last_btc;
+    var last_eth;
+    var last_lit;
+
     axios.get('/get_all_data')
             .then(function (response) {
                 const currencies = response.data;
                 currencies.forEach(currency => {
+                    if (currency.name == 'bitcoin'){
+                        last_btc = currency;
+                    }
+                    else if (currency.name == 'ethereum'){
+                        last_eth = currency;
+                    }
+                    else{
+                        last_lit = currency;
+                    }
                     init[coin_map[currency.name.toLowerCase()]].push(currency.price);
                     labels[coin_map[currency.name.toLowerCase()]].push(currency.created_date);
+                });
+                const tableBody = document.getElementById(`btc-table`).querySelector('tbody');
+                tableBody.innerHTML = '';
+                [last_btc, last_eth, last_lit].forEach(currency => {
+                    const row = tableBody.insertRow();
+                    const cell1 = row.insertCell(0);
+                    const cell2 = row.insertCell(1);
+                    const cell3 = row.insertCell(2);
+
+                    cell1.textContent = currency.name;
+                    cell2.textContent = '$' + currency.price.toFixed(2);
+                    cell3.innerHTML = currency.change > 0
+                        ? `<span class="text-green-600">+${currency.change}</span>`
+                        : `<span class="text-red-600">${currency.change}</span>`;
                 });
             })
             .catch(function (error) {
                 console.error(error);
                 alert('Ошибка при получении данных. Проверьте сервер.');
             });
-    
-    console.log(init);
-    console.log(labels);
     ['btc', 'eth', 'ltc'].forEach(coin => {
-    createChart(`${coin}Chart`, `${coin.toUpperCase()} Forecast`, labels[coin], init[coin]);
+        createChart(`${coin}Chart`, `${coin.toUpperCase()} Forecast`, labels[coin], init[coin]);
     });
 
-    // Обработчик кнопок обновления
     document.querySelectorAll('.update-button').forEach(button => {
         button.addEventListener('click', function () {
             const coin = this.dataset.coin;
             const chart = charts[`${coin}Chart`];
             const lastLabel = chart.data.labels.at(-1);
-            console.log(chart.data.labels);
-            console.log(chart.data.labels.at(-1));
 
             axios.get('/update', { params: { created_date: lastLabel } })
             .then(function (response) {
                 const currencies = response.data;
                 const tableBody = document.getElementById(`${coin}-table`).querySelector('tbody');
-                tableBody.innerHTML = '';
+                if (currencies.length != 0){
+                    tableBody.innerHTML = '';
+                }
 
                 currencies.forEach(currency => {
                     const row = tableBody.insertRow();

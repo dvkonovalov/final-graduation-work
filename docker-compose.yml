@@ -8,7 +8,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      private_key: ${private_key_app}
     ports:
       - "5000:5000"
     volumes:
@@ -18,113 +17,119 @@ services:
     networks:
       - crypto-network
     
-#   datacollector:
-#     build:
-#       context: data_collector
-#       dockerfile: Dockerfile
-#     environment:
-#       collection_interval_hours: ${collection_interval_hours}
-#       collection_interval_minutes: ${collection_interval_minutes}
-#       reddit_client_id: ${reddit_client_id}
-#       reddit_client_secret: ${reddit_client_secret}
-#       reddit_username: ${reddit_username}
-#       reddit_password: ${reddit_password}
-#       reddit_user_agent: ${reddit_user_agent}
-#       historical_days: ${historical_days}
-#       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-#       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-#       private_key: ${private_key_data_collector}
-#     ports:
-#       - "5001:5001"
-#     depends_on:
-#       - database
-#       - mongodb
-#       - gateway
-#     networks:
-#       - crypto-network
+  datacollector:
+    build:
+      context: data_collector
+      dockerfile: Dockerfile
+    environment:
+      collection_interval_hours: ${collection_interval_hours}
+      collection_interval_minutes: ${collection_interval_minutes}
+      reddit_client_id: ${reddit_client_id}
+      reddit_client_secret: ${reddit_client_secret}
+      reddit_username: ${reddit_username}
+      reddit_password: ${reddit_password}
+      reddit_user_agent: ${reddit_user_agent}
+      historical_days: ${historical_days}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      private_key: ${private_key_data_collector}
+    ports:
+      - "5001:5001"
+    depends_on:
+      - database
+      - mongodb
+      - gateway
+    networks:
+      - crypto-network
 
-#   preparing:
-#     build:
-#       context: preparing_module
-#       dockerfile: Dockerfile
-#     environment:
-#       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-#       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-#       private_key: ${private_key_preparing_module}
-#     ports:
-#       - "5002:5002"
-#     depends_on:
-#       - mongodb
-#     networks:
-#       - crypto-network
+  preparing:
+    build:
+      context: preparing_module
+      dockerfile: Dockerfile
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      private_key: ${private_key_preparing_module}
+    ports:
+      - "5002:5002"
+    depends_on:
+      - mongodb
+    networks:
+      - crypto-network
 
-#   gateway:
-#     build:
-#       context: api_gateway
-#       dockerfile: Dockerfile
-#     environment:
-#       POSTGRES_USER: ${POSTGRES_USER}
-#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-#       POSTGRES_DB: ${POSTGRES_DB}
-#       private_key: ${private_key_api_gateway}
-#     ports:
-#       - "5010:5010"
-#     depends_on:
-#       - database
-#       - mongodb
-#       - preparing
-#     networks:
-#       - crypto-network
+  gateway:
+    build:
+      context: api_gateway
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      private_key: ${private_key_api_gateway}
+    ports:
+      - "5010:5010"
+    depends_on:
+      - database
+      - mongodb
+    networks:
+      - crypto-network
 
-#   ml_module:
-#     build:
-#       context: ml_module
-#       dockerfile: Dockerfile
-#     environment:
-#       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-#       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-#       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-#       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-#       private_key: ${private_key_ml_module}
-#     ports:
-#       - "5003:5003"
-#     depends_on:
-#       - mongodb
-#       - minio
-#     networks:
-#       - crypto-network
+  ml_module:
+    build:
+      context: ml_module
+      dockerfile: Dockerfile
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      private_key: ${private_key_ml_module}
+    ports:
+      - "5003:5003"
+    depends_on:
+      - mongodb
+      - minio
+    networks:
+      - crypto-network
 
 
-#   retrain:
-#     build:
-#       context: retraining
-#       dockerfile: Dockerfile
-#     environment:
-#       POSTGRES_USER: ${POSTGRES_USER}
-#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-#       POSTGRES_DB: ${POSTGRES_DB}
-#       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-#       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-#       private_key: ${private_key_retrain}
-#     ports:
-#       - "5004:5004"
-#     depends_on:
-#       - database
-#       - mongodb
-#     networks:
-#       - crypto-network
+  retrain:
+    build:
+      context: retraining
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      private_key: ${private_key_retrain}
+    ports:
+      - "5004:5004"
+    depends_on:
+      - database
+      - mongodb
+      - gateway
+    networks:
+      - crypto-network
 
 
   minio:
     image: minio/minio
     ports:
       - "9000:9000"
+      - "9001:9001"
     volumes:
       - ./data:/data
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: ["server", "/data"]
+    networks:
+      - crypto-network
 
   mongodb:
     image: mongo

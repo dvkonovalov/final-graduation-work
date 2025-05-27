@@ -22,6 +22,7 @@ def read_public_sert(filepath : str):
 CONFIG = {
     'data_collector': read_public_sert('data_collector.pem'),
     'preparing_module': read_public_sert('preparing_module.pem'),
+    'retraining_module': read_public_sert('retraining_module.pem'),
 }
 
 def create_token(sub:str, jti : str):

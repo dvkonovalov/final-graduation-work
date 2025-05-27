@@ -2,7 +2,7 @@ from flask import Flask
 import os
 
 from src.db import db
-from src.controllers.prediction_controller import index, update, get_all_data
+from src.controllers.prediction_controller import index, update, get_all_data, init_data
 from prometheus_client import make_wsgi_app
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 

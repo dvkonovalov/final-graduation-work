@@ -10,11 +10,11 @@ RUN pip install --upgrade setuptools
 
 COPY requirements.txt requirements.txt
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
-COPY requirements2.txt requirements2.txt
+COPY requirements2.txt requirements2.txt 
 
-RUN pip install -r requirements2.txt
+RUN pip install -r requirements2.txt --extra-index-url https://download.pytorch.org/whl/cpu
 
 COPY . .
 

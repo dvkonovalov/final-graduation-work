@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 
 from src.db import db
+from src.logger import logger
 
 def read_from_db(collection : str) -> pd.DataFrame:
     docs = list(db[collection].find())
@@ -50,4 +51,4 @@ def prepare_data(features_path="processed_features", historical_path="processed_
         X.append(merged_df[feature_cols].iloc[i:i+sequence_length].values)
         y.append(merged_df[target_col].iloc[i+sequence_length+prediction_horizon-1])
 
-    return np.array(X), np.array(y)  # <-- ВАЖНО!!!
+    return np.array(X), np.array(y)

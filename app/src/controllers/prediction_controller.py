@@ -19,18 +19,6 @@ async def update():
         last_prediction_time = datetime.datetime.strptime(date, "%a, %d %b %Y %H:%M:%S %Z")
     except:
         logger.warning(f"Невозможно конвертировать {date} в DateTime!")
-    currencies = [
-        {"name": "Bitcoin", "price": random.randint(40000, 50000), "change": random.uniform(-5, 5)},
-        {"name": "Ethereum", "price": random.randint(3000, 4000), "change": random.uniform(-5, 5)},
-        {"name": "Litecoin", "price": random.randint(150, 250), "change": random.uniform(-5, 5)}
-    ]
-    for currency in currencies:
-        new_rec = Cryptocurrency(
-            name = currency["name"],
-            price = currency["price"],
-            change = currency["change"]
-        )
-        await save_changes(new_rec)
     if last_prediction_time is not None:
         currencies = Cryptocurrency.query.filter(Cryptocurrency.created_date > last_prediction_time).all()
     else:

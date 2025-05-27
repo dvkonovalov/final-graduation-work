@@ -8,39 +8,36 @@ from io import BytesIO
 
 from src.utils import prepare_data
 from src.minio_connection import put_object
+from src.logger import logger
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# Параметры
-SEQUENCE_LENGTH = 12  # 12 x 10 минут = 2 часа истории на вход
-PREDICTION_HORIZON = 6  # Предсказываем через 1 час = 6 шагов по 10 минут
+SEQUENCE_LENGTH = 12
+PREDICTION_HORIZON = 6
 
 
-# ----- LSTM модель -----
 class LSTMModel(nn.Module):
     def __init__(self, input_dim, hidden_dim=64, num_layers=2):
-        print(input_dim)
+        logger.debug(input_dim)
         super(LSTMModel, self).__init__()
         self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_dim, 1)
 
     def forward(self, x):
         out, _ = self.lstm(x)
-        out = out[:, -1, :]  # берем выход последнего элемента
+        out = out[:, -1, :]
         out = self.fc(out)
         return out
 
-# ----- Обучение моделей -----
+
 def train_models():
-    # Загрузка данных
     features, targets = prepare_data(sequence_length=SEQUENCE_LENGTH, prediction_horizon=PREDICTION_HORIZON)
 
-    # Деление на обучающую и тестовую выборки
     split_idx = int(len(features) * 0.8)
     X_train, X_test = features[:split_idx], features[split_idx:]
     y_train, y_test = targets[:split_idx], targets[split_idx:]
 
-    # ---- Обучение LSTM ----
+
     class CryptoDataset(Dataset):
         def __init__(self, X, y):
             self.X = torch.tensor(X, dtype=torch.float32)
@@ -72,12 +69,14 @@ def train_models():
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()
-        print(f"LSTM Epoch {epoch+1}/{epochs}, Loss: {epoch_loss/len(train_loader):.4f}")
+        logger.debug(f"LSTM Epoch {epoch+1}/{epochs}, Loss: {epoch_loss/len(train_loader):.4f}")
 
-    torch.save(model.state_dict(), "models/lstm_model.pt")
-    print("✅ LSTM model saved.")
+    buffer = BytesIO()
+    torch.save(model.state_dict(), buffer)
+    put_object("lstm_model.pt", buffer)
+    logger.debug("LSTM model saved.")
 
-    # ---- Обучение XGBoost и LightGBM ----
+
     X_train_flat = X_train.reshape(X_train.shape[0], -1)
     X_test_flat = X_test.reshape(X_test.shape[0], -1)
 
@@ -87,7 +86,7 @@ def train_models():
     buffer = BytesIO()
     joblib.dump(xgb_model, buffer)
     put_object("xgb_model.pkl", buffer)
-    print("✅ XGBoost model saved.")
+    logger.debug("XGBoost model saved.")
 
     lgb_model = lgb.LGBMRegressor(n_estimators=100)
     lgb_model.fit(X_train_flat, y_train)
@@ -95,4 +94,4 @@ def train_models():
     buffer = BytesIO()
     joblib.dump(lgb_model, buffer)
     put_object("lgb_model.pkl", buffer)
-    print("✅ LightGBM model saved.")
+    logger.debug("LightGBM model saved.")
